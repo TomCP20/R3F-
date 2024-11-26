@@ -17,6 +17,35 @@ float sdBox(vec3 p, vec3 b)
     return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
+float maxcomp(vec2 p)
+{
+    return max(p.x, p.y);
+}
+
+float sdCross(vec3 p)
+{
+    float da = maxcomp(abs(p.xy));
+    float db = maxcomp(abs(p.yz));
+    float dc = maxcomp(abs(p.zx));
+    return min(da, min(db, dc)) - 1.0;
+}
+
+float sdMenger(vec3 p, int iterations)
+{
+    float d = sdBox(p, vec3(1.0));
+    float s = 1.0;
+    for(int m = 0; m < iterations; m++)
+    {
+        vec3 a = mod(p * s, 2.0) - 1.0;
+        s *= 3.0;
+        vec3 r = 1.0 - 3.0 * abs(a);
+
+        float c = sdCross(r) / s;
+        d = max(d, c);
+    }
+    return d;
+}
+
 mat3 rotateX3D(float angle)
 {
     float s = sin(angle);
@@ -40,8 +69,7 @@ mat3 rotateZ3D(float angle)
 
 float scene(vec3 p)
 {
-    return sdBox(p, vec3(1));
-
+    return sdMenger(p, 4);
 }
 
 float raymarch(vec3 ro, vec3 rd)
@@ -95,32 +123,45 @@ void main()
     uv.x *= uResolution.x / uResolution.y;
 
     // Light Position
-    vec3 lightPosition = rotateY3D(-M_PI/5.0) * vec3(10.0, 10.0, 10.0);
+    vec3 lightPosition = rotateY3D(-M_PI / 5.0) * vec3(10.0, 10.0, 10.0);
 
-    vec3 ro = vec3(5.0, 3.0, 5.0);
+    vec3 ro = rotateY3D(uTime/3.0) * vec3(0.0, 1.5, 5.0);
+
     vec3 lookAt = vec3(0.0);
-    vec3 f = normalize(lookAt-ro);
+    vec3 f = normalize(lookAt - ro);
     vec3 r = cross(vec3(0.0, 1.0, 0.0), f);
     vec3 u = cross(f, r);
 
-    vec3 c = ro+f;
-    vec3 i = c+uv.x*r+uv.y*u;
-    vec3 rd = i-ro;
+    vec3 c = ro + f;
+    vec3 i = c + uv.x * r + uv.y * u;
+    vec3 rd = i - ro;
 
     float d = raymarch(ro, rd);
     vec3 p = ro + rd * d;
 
     vec3 color = vec3(0.0);
 
+
+    int material_type = 0;
     if(d < MAX_DIST)
     {
-        vec3 normal = getNormal(p);
-        vec3 lightDirection = normalize(lightPosition - p);
-
-        float diffuse = max(dot(normal, lightDirection), 0.0);
-        float shadows = softShadows(p, lightDirection, 0.1, 5.0, 64.0);
-        color = vec3(1.0, 1.0, 1.0) * diffuse * shadows;
+        if (material_type == 0)
+        {
+            vec3 normal = getNormal(p);
+            color = normal * 0.5 + 0.5;
+        }
+        else if (material_type == 1)
+        {
+            vec3 normal = getNormal(p);
+            vec3 lightDirection = normalize(lightPosition - p);
+            float diffuse = max(dot(normal, lightDirection), 0.0);
+            float shadows = softShadows(p, lightDirection, 0.1, 5.0, 64.0);
+            color = vec3(1.0, 1.0, 1.0) * diffuse * shadows;
+        }
+        else
+        {
+            color = vec3(1.0);
+        }
     }
-
     gl_FragColor = vec4(color, 1.0);
 }
