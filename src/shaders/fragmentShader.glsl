@@ -4,21 +4,44 @@ uniform vec2 uResolution;
 #define MAX_STEPS 100
 #define MAX_DIST 100.0
 #define SURFACE_DIST 0.01
+#define M_PI 3.1415926535897932384626433832795
 
 float sdSphere(vec3 p, float radius)
 {
     return length(p) - radius;
 }
 
+float sdBox(vec3 p, vec3 b)
+{
+    vec3 q = abs(p) - b;
+    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+}
+
+mat3 rotateX3D(float angle)
+{
+    float s = sin(angle);
+    float c = cos(angle);
+    return mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+}
+
+mat3 rotateY3D(float angle)
+{
+    float s = sin(angle);
+    float c = cos(angle);
+    return mat3(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
+}
+
+mat3 rotateZ3D(float angle)
+{
+    float s = sin(angle);
+    float c = cos(angle);
+    return mat3(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+}
+
 float scene(vec3 p)
 {
-    float plane = p.y + 1.0;
-    float sphere1 = sdSphere(p - vec3(1.0 + cos(uTime), 0.7, 0.0), 1.0);
-    float sphere2 = sdSphere(p + vec3(1.0, 0.5 + sin(uTime) / 2.0, 0.0), 1.0);
+    return sdBox(p, vec3(1));
 
-    float distance1 = min(sphere1, sphere2);
-    float distance2 = min(plane, distance1);
-    return distance2;
 }
 
 float raymarch(vec3 ro, vec3 rd)
@@ -72,10 +95,17 @@ void main()
     uv.x *= uResolution.x / uResolution.y;
 
     // Light Position
-    vec3 lightPosition = vec3(-10.0, 10.0, 10.0);
+    vec3 lightPosition = rotateY3D(-M_PI/5.0) * vec3(10.0, 10.0, 10.0);
 
-    vec3 ro = vec3(0.0, 0.0, 5.0);
-    vec3 rd = normalize(vec3(uv, -1.0));
+    vec3 ro = vec3(5.0, 3.0, 5.0);
+    vec3 lookAt = vec3(0.0);
+    vec3 f = normalize(lookAt-ro);
+    vec3 r = cross(vec3(0.0, 1.0, 0.0), f);
+    vec3 u = cross(f, r);
+
+    vec3 c = ro+f;
+    vec3 i = c+uv.x*r+uv.y*u;
+    vec3 rd = i-ro;
 
     float d = raymarch(ro, rd);
     vec3 p = ro + rd * d;
