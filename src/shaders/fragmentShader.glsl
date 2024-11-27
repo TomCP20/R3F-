@@ -1,5 +1,7 @@
 uniform float uTime;
 uniform vec2 uResolution;
+uniform vec3 uCamPos;
+uniform float uCamAngle;
 
 #define MAX_STEPS 100
 #define MAX_DIST 200.0
@@ -86,15 +88,11 @@ float scene(vec3 p)
 float raymarch(vec3 ro, vec3 rd)
 {
     float dO = 0.0;
-    vec3 color = vec3(0.0);
-
     for(int i = 0; i < MAX_STEPS; i++)
     {
         vec3 p = ro + rd * dO;
         float dS = scene(p);
-
         dO += dS;
-
         if(dO > MAX_DIST || dS < SURFACE_DIST)
         {
             break;
@@ -106,35 +104,8 @@ float raymarch(vec3 ro, vec3 rd)
 vec3 getNormal(vec3 p)
 {
     vec2 e = vec2(.01, 0);
-
     vec3 n = scene(p) - vec3(scene(p - e.xyy), scene(p - e.yxy), scene(p - e.yyx));
-
     return normalize(n);
-}
-
-float softShadows(vec3 ro, vec3 rd, float mint, float maxt, float k)
-{
-    float resultingShadowColor = 1.0;
-    float t = mint;
-    for(int i = 0; i < 50 && t < maxt; i++)
-    {
-        float h = scene(ro + rd * t);
-        if(h < 0.001)
-            return 0.0;
-        resultingShadowColor = min(resultingShadowColor, k * h / t);
-        t += h;
-    }
-    return resultingShadowColor;
-}
-
-vec3 getLookAtDir(vec2 uv, vec3 rayOrigin, vec3 lookAt)
-{
-    vec3 f = normalize(lookAt - rayOrigin);
-    vec3 r = cross(vec3(0.0, 1.0, 0.0), f);
-    vec3 u = cross(f, r);
-    vec3 c = rayOrigin + f;
-    vec3 i = c + uv.x * r + uv.y * u;
-    return i - rayOrigin;
 }
 
 void main()
@@ -143,10 +114,8 @@ void main()
     uv -= 0.5;
     uv.x *= uResolution.x / uResolution.y;
 
-    vec3 rayOrigin = vec3(-10.0 * uTime, 10.0 * sin(uTime), 0.0);
-
-    //vec3 rayDirection = getLookAtDir(uv, rayOrigin, vec3(0.0));
-    vec3 rayDirection = rotateY3D(uTime) * normalize(vec3(uv, -1.0));
+    vec3 rayOrigin = uCamPos;
+    vec3 rayDirection = rotateY3D(uCamAngle) * normalize(vec3(uv, -1.0));
 
     float distance = raymarch(rayOrigin, rayDirection);
     vec3 p = rayOrigin + rayDirection * distance;
