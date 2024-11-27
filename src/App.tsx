@@ -10,7 +10,7 @@ const DPR = 1;
 export default function App() {
   return (
     <div className="size-[800px] text-center m-auto">
-      <Canvas camera={{ position: [0, 0, 6] }} dpr={DPR} className="bg-black" gl={{ preserveDrawingBuffer: true }}>
+      <Canvas camera={{ position: [0, 1.5, 4] }} dpr={DPR} className="bg-black" gl={{ preserveDrawingBuffer: true }}>
         <Sdf />
       </Canvas>
     </div>
@@ -37,7 +37,7 @@ function Sdf() {
 
   return (
     <mesh scale={[viewport.width, viewport.height, 1]}>
-      <planeGeometry args={[1, 1]} />
+      <planeGeometry args={[2, 2]} />
       <shaderMaterial
         ref={shaderRef}
         fragmentShader={fragmentShader}

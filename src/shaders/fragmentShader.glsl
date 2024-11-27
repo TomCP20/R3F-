@@ -122,6 +122,16 @@ float softShadows(vec3 ro, vec3 rd, float mint, float maxt, float k)
     return resultingShadowColor;
 }
 
+vec3 getLookAtDir(vec2 uv, vec3 rayOrigin, vec3 lookAt) 
+{
+    vec3 f = normalize(lookAt - rayOrigin);
+    vec3 r = cross(vec3(0.0, 1.0, 0.0), f);
+    vec3 u = cross(f, r);
+    vec3 c = rayOrigin + f;
+    vec3 i = c + uv.x * r + uv.y * u;
+    return i - rayOrigin;
+}
+
 void main()
 {
     vec2 uv = gl_FragCoord.xy / uResolution.xy;
@@ -133,14 +143,8 @@ void main()
 
     vec3 rayOrigin = vec3(0.0, 1.5, 4.0);
 
-    vec3 lookAt = vec3(0.0);
-    vec3 f = normalize(lookAt - rayOrigin);
-    vec3 r = cross(vec3(0.0, 1.0, 0.0), f);
-    vec3 u = cross(f, r);
-
-    vec3 c = rayOrigin + f;
-    vec3 i = c + uv.x * r + uv.y * u;
-    vec3 rayDirection = i - rayOrigin;
+    vec3 rayDirection = getLookAtDir(uv, rayOrigin, vec3(0.0));
+    //vec3 rayDirection = normalize(vec3(uv, -1.0));
 
     float distance = raymarch(rayOrigin, rayDirection);
     vec3 p = rayOrigin + rayDirection * distance;
