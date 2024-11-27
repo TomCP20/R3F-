@@ -11,6 +11,12 @@ float sdSphere(vec3 p, float radius)
     return length(p) - radius;
 }
 
+float sdSphereMod(vec3 p, float radius, float m)
+{
+    p = mod(p, m)-vec3(m/2.0);
+    return length(p) - radius;
+}
+
 float sdBox(vec3 p, vec3 b)
 {
     vec3 q = abs(p) - b;
@@ -69,7 +75,8 @@ mat3 rotateZ3D(float angle)
 
 float scene(vec3 p)
 {
-    return sdMenger(p, 4);
+    //return sdMenger(p, 4);
+    return sdSphereMod(p, 1.0, 5.0);
 }
 
 float raymarch(vec3 ro, vec3 rd)
@@ -125,25 +132,25 @@ void main()
     // Light Position
     vec3 lightPosition = rotateY3D(-M_PI / 5.0) * vec3(10.0, 10.0, 10.0);
 
-    vec3 ro = rotateY3D(uTime/3.0) * vec3(0.0, 1.5, 5.0);
+    vec3 rayOrigin = vec3(0.0, 1.5, 4.0);
 
     vec3 lookAt = vec3(0.0);
-    vec3 f = normalize(lookAt - ro);
+    vec3 f = normalize(lookAt - rayOrigin);
     vec3 r = cross(vec3(0.0, 1.0, 0.0), f);
     vec3 u = cross(f, r);
 
-    vec3 c = ro + f;
+    vec3 c = rayOrigin + f;
     vec3 i = c + uv.x * r + uv.y * u;
-    vec3 rd = i - ro;
+    vec3 rayDirection = i - rayOrigin;
 
-    float d = raymarch(ro, rd);
-    vec3 p = ro + rd * d;
+    float distance = raymarch(rayOrigin, rayDirection);
+    vec3 p = rayOrigin + rayDirection * distance;
 
     vec3 color = vec3(0.0);
 
 
     int material_type = 0;
-    if(d < MAX_DIST)
+    if(distance < MAX_DIST)
     {
         if (material_type == 0)
         {
@@ -156,7 +163,7 @@ void main()
             vec3 lightDirection = normalize(lightPosition - p);
             float diffuse = max(dot(normal, lightDirection), 0.0);
             float shadows = softShadows(p, lightDirection, 0.1, 5.0, 64.0);
-            color = vec3(1.0, 1.0, 1.0) * diffuse * shadows;
+            color = vec3(1.0) * diffuse * shadows;
         }
         else
         {
