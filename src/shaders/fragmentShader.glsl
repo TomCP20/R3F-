@@ -13,8 +13,7 @@ float sdSphere(vec3 p, float radius)
 
 float sdSphereMod(vec3 p, float radius, float m)
 {
-    p = mod(p, m)-vec3(m/2.0);
-    return length(p) - radius;
+    return sdSphere(mod(p, m) - vec3(m / 2.0), radius);
 }
 
 float sdBox(vec3 p, vec3 b)
@@ -148,16 +147,15 @@ void main()
 
     vec3 color = vec3(0.0);
 
-
     int material_type = 0;
     if(distance < MAX_DIST)
     {
-        if (material_type == 0)
+        if(material_type == 0)
         {
             vec3 normal = getNormal(p);
             color = normal * 0.5 + 0.5;
         }
-        else if (material_type == 1)
+        else if(material_type == 1)
         {
             vec3 normal = getNormal(p);
             vec3 lightDirection = normalize(lightPosition - p);
