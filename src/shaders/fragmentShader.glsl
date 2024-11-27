@@ -6,6 +6,11 @@ uniform vec2 uResolution;
 #define SURFACE_DIST 0.01
 #define M_PI 3.1415926535897932384626433832795
 
+vec3 repeat(vec3 p, float m)
+{
+    return mod(p, m) - vec3(m / 2.0);
+}
+
 float sdSphere(vec3 p, float radius)
 {
     return length(p) - radius;
@@ -13,7 +18,7 @@ float sdSphere(vec3 p, float radius)
 
 float sdSphereMod(vec3 p, float radius, float m)
 {
-    return sdSphere(mod(p, m) - vec3(m / 2.0), radius);
+    return sdSphere(repeat(p, m), radius);
 }
 
 float sdBox(vec3 p, vec3 b)
