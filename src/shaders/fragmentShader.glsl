@@ -2,6 +2,7 @@ uniform float uTime;
 uniform vec2 uResolution;
 uniform vec3 uCamPos;
 uniform float uCamAngle;
+uniform int uSceneID;
 
 #define MAX_STEPS 100
 #define MAX_DIST 200.0
@@ -81,8 +82,15 @@ mat3 rotateZ3D(float angle)
 
 float scene(vec3 p)
 {
-    //return sdMenger(p, 4);
-    return sdSphereMod(p, 1.0, 5.0);
+    if (uSceneID == 0)
+    {
+        return sdSphereMod(p, 1.0, 5.0);
+    }
+    else if (uSceneID == 1)
+    {
+        return sdMenger(p, 4);
+    }
+    return 0.0;    
 }
 
 float raymarch(vec3 ro, vec3 rd)
