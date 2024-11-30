@@ -1,13 +1,17 @@
-import { Canvas } from "@react-three/fiber"
+import { HashRouter, Route, Routes } from "react-router-dom";
 import Menger from "./Menger";
+import RepeatingSpheres from "./RepeatingSpheres";
+import NavBar from "./NavBar";
 
 export default function App() {
   return (
-    <div className="size-[800px] text-center m-auto">
-      <Canvas camera={{ position: [0, 1.5, 4] }} className="bg-black" gl={{ preserveDrawingBuffer: true }}>
-        <Menger />
-      </Canvas>
-    </div>
+    <HashRouter>
+        <NavBar />
+        <Routes>
+          <Route path="/" element={<RepeatingSpheres />} />
+          <Route path="/menger" element={<Menger />} />
+        </Routes>
+    </HashRouter>
   )
 }
 
